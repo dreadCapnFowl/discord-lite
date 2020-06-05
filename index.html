@@ -1,0 +1,86 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="UTF-8">
+    <!-- https://developer.mozilla.org/en-US/docs/Web/HTTP/CSP -->
+    <title>Discord Lite</title>
+  </head>
+  <body>
+	<div id="chatlog">
+
+	</div>
+  <div id="textarea" >
+    <select id="servers">
+      <option>Made by Dark Overlord</option>
+    </select>
+    <select id="channels">
+      <option>Made by Dark Overlord</option>
+    </select>
+    <input type="text" id="input"/>
+    <input type="button" onclick="play()"/>
+  </div>
+    <!-- You can also require other files to run in this process -->
+    <script src="./renderer.js"></script>
+  </body>
+</html>
+
+<style>
+html, body {
+  background: #000000;
+  color: white;
+  font-family: Helvetica;
+  width: 100%;
+  height: 100%;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+}
+
+select {
+  width: 250px;
+}
+input {
+  width: 100%;
+}
+#textarea {
+  width: 100%;
+  display: flex;
+}
+
+#chatlog {
+  width: 100%;
+  height: 100%;
+  font-size: 18px;
+  overflow-y: auto;
+}
+.time {
+  margin: 1px;
+}
+.guild {
+  font-weight: bold;
+  margin: 1px;
+}
+.author {
+  margin: 1px;
+}
+.channel {
+  font-style: italic;
+  margin: 1px;
+}
+.content {
+  margin: 1px;
+}
+.message {
+  display: flex;
+  margin: 3px;
+}
+</style>
+
+<template class="message">
+  <span class="guild"></span>
+  <span class="channel"></span>
+  <span class="time"></span>
+  <span class="author"></span>
+  <span class="content"></span>
+</template>
