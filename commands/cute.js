@@ -14,7 +14,7 @@ module.exports = {
 	description: 'Fetches an anime girl from Tenor',
 	execute(message, args) {
     message.delete()
-    Tenor.Search.Random("cute anime girl", "3").then(res => {
+    Tenor.Search.Random("cute anime girl", "1").then(res => {
           message.channel.send(res.random().url)
     }).catch(console.error);
 	},

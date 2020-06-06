@@ -25,13 +25,19 @@ client.on('message', msg => {
   node.innerHTML = tpl.innerHTML;
   node.id = msg.id
 
-
-
   var dateTime = new Date(msg.createdTimestamp)
   dateTime = ("0" + dateTime.getHours()).substr(-2) + ':' + ("0" + dateTime.getMinutes()).substr(-2) + ':' + ("0" + dateTime.getSeconds()).substr(-2)
   node.querySelector('.time').innerHTML = '['+ dateTime +']'
-  node.querySelector('.guild').innerHTML = '/'+ msg.guild.name+'/'
-  node.querySelector('.channel').innerHTML = '#' + msg.channel.name
+
+  if (msg.guild)
+    node.querySelector('.guild').innerHTML = '/'+ msg.guild.name+'/'
+
+  if (msg.guild)
+    node.querySelector('.channel').innerHTML = '#' + msg.channel.name
+  else {
+    node.querySelector('.channel').innerHTML = `[` + msg.author.tag + `]`
+  }
+
   node.querySelector('.author').innerHTML = msg.author.tag +':'
   node.querySelector('.content').innerHTML = msg.cleanContent
   node.id = msg.channel.id
@@ -88,15 +94,17 @@ client.on('ready', () => {
 
      channels.onchange = e => {
        window.selectedChannel = window.selectedGuild.channels.resolve(e.target.value)
-
-
      }
      servers.onchange = (e) => {
        var g = client.guilds.resolve(e.target.value);
        window.selectedGuild = g;
        console.log('Selected guild:', window.selectedGuild)
        channels.innerHTML = ''
-       window.selectedGuild.channels.cache.array().forEach(c => {
+       window.selectedGuild.channels.cache.array()
+       .filter(chan => chan instanceof Discord.TextChannel)
+       .sort((a, b) => {
+         return a.position - b.position
+       }).forEach(c => {
          var option = document.createElement('option')
          option.value = c.id
          option.innerHTML = '#' + c.name;

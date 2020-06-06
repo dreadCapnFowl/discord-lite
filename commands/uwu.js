@@ -10,11 +10,11 @@ const Tenor = require("tenorjs").client({
 });
 
 module.exports = {
-	name: '/smug',
-	description: 'Fetches an anime girl from Tenor',
+	name: '/uwu',
+	description: 'Fetches an uwu girl from Tenor',
 	execute(message, args) {
     message.delete()
-    Tenor.Search.Random("smug anime girl", "1").then(res => {
+    Tenor.Search.Random("anime uwu", "1").then(res => {
           message.channel.send(res.random().url)
     }).catch(console.error);
 	},

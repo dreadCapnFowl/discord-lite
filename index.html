@@ -72,14 +72,21 @@ input {
 }
 .message {
   display: flex;
+  flex-direction: column;
   margin: 3px;
+  margin-top: 3px;
+  margin-bottom: 3px;
 }
 </style>
 
 <template class="message">
-  <span class="guild"></span>
-  <span class="channel"></span>
-  <span class="time"></span>
-  <span class="author"></span>
-  <span class="content"></span>
+  <div>
+    <span class="guild"></span>
+    <span class="channel"></span>
+  </div>
+  <div>
+    <span class="time"></span>
+    <span class="author"></span>
+    <span class="content"></span>
+  </div>
 </template>
