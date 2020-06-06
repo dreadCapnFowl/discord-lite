@@ -1,0 +1,48 @@
+:root {
+  --bg: #000000;
+  --bg-gradient: #140014;
+  --fg:  #f596ff;
+}
+
+* {
+  background: #000000;
+  color: var(--fg);
+  border-color: var(--fg);
+  font-family: Helvetica;
+}
+a {
+  text-decoration: underline;
+}
+::selection {
+    background: var(--fg);
+    color: #ffffff;
+}
+input {
+  background: linear-gradient(var(--bg-gradient), var(--bg));
+}
+select,
+input[type=range],
+option {
+  background: var(--bg);
+}
+
+input[type=range]::-webkit-slider-runnable-track,
+input[type=range]::-moz-range-track,
+input[type=range]::-webkit-slider-thumb,
+input[type=range]::-moz-range-thumb {
+  background: var(--fg);
+}
+
+.center {
+  justify-content: center;
+  align-items: center;
+}
+.bigger {
+  font-size: 120%;
+}
+
+.col {
+  display: flex;
+  flex-direction: column;
+  width: 300px;
+}

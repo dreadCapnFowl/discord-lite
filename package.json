@@ -21,6 +21,7 @@
   },
   "dependencies": {
     "discord.js": "^12.2.0",
-    "markdown": "^0.5.0"
+    "markdown": "^0.5.0",
+    "tenorjs": "^1.0.7"
   }
 }

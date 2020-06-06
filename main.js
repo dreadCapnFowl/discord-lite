@@ -25,7 +25,7 @@ function createWindow () {
     label: 'Options',
     submenu: [
       {
-        label: '5 second delete',
+        label: '7 second delete',
         type: 'checkbox',
         click(e) {
           mainWindow.webContents.send('deleteChecked', e.checked)

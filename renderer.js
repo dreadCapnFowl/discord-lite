@@ -5,9 +5,16 @@
 // selectively enable features needed in the rendering
 // process.
 
+const fs = require('fs');
 const { ipcRenderer } = require('electron')
 var Discord = require('discord.js')
+
+Array.prototype.random = function () {
+  return this[Math.floor((Math.random()*this.length))];
+}
+
 const client = new Discord.Client();
+client.commands = new Discord.Collection();
 client.login(require('./token.json'));
 
 client.on('message', msg => {
@@ -39,11 +46,27 @@ client.on('message', msg => {
   if (window.deleteTimeout && msg.author.id == client.user.id) {
     msg.delete({timeout: 7000})
   }
+
+  var tokens = msg.cleanContent.split(' ')
+  var cmd = client.commands.get(tokens[0])
+  if (cmd && msg.author.id == client.user.id) {
+    cmd.execute(msg, tokens);
+  }
 });
 
 var servers = document.querySelector('#servers');
 client.on('ready', () => {
   console.log(`Logged in as ${client.user.tag}!`);
+
+  const commandFiles = fs.readdirSync('./commands').filter(file => file.endsWith('.js'));
+
+  for (const file of commandFiles) {
+  	const command = require(`./commands/${file}`);
+    console.log(command.name,'-',command.description)
+  	// set a new item in the Collection
+  	// with the key as the command name and the value as the exported module
+  	client.commands.set(command.name, command);
+  }
 
   document.getElementById('input').addEventListener('keydown', e => {
     var channels = document.querySelector('#channels')
