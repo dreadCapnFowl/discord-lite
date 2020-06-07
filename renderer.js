@@ -17,6 +17,9 @@ const client = new Discord.Client();
 client.commands = new Discord.Collection();
 client.login(require('./token.json'));
 
+var channels = document.querySelector('#channels')
+var servers = document.querySelector('#servers');
+
 client.on('message', msg => {
   var tpl = document.querySelector('template.message')
   var node = document.createElement('div')
@@ -29,11 +32,46 @@ client.on('message', msg => {
   dateTime = ("0" + dateTime.getHours()).substr(-2) + ':' + ("0" + dateTime.getMinutes()).substr(-2) + ':' + ("0" + dateTime.getSeconds()).substr(-2)
   node.querySelector('.time').innerHTML = '['+ dateTime +']'
 
-  if (msg.guild)
+  if (msg.guild) {
     node.querySelector('.guild').innerHTML = '/'+ msg.guild.name+'/'
+    node.onclick = (e) => {
 
-  if (msg.guild)
+      var options = servers.options;
+      for (var o in options) {
+        if (options[o].id == msg.guild.id) {
+          servers.selectedIndex = o;
+          window.selectedGuild = msg.guild
+          break;
+        }
+      }
+      populateChannels(msg.guild.id)
+    }
+  }
+
+  if (msg.guild) {
     node.querySelector('.channel').innerHTML = '#' + msg.channel.name
+    node.onclick = (e) => {
+
+      var options = servers.options;
+      for (var o in options) {
+        if (options[o].id == msg.guild.id) {
+          servers.selectedIndex = o;
+          window.selectedGuild = msg.guild
+          break;
+        }
+      }
+      populateChannels(msg.guild.id)
+
+      options = channels.options;
+      for (var o in options) {
+        if (options[o].id == msg.channel.id) {
+          channels.selectedIndex = o;
+          window.selectedChannel = msg.channel
+          break;
+        }
+      }
+    }
+  }
   else {
     node.querySelector('.channel').innerHTML = `[` + msg.author.tag + `]`
   }
@@ -60,7 +98,7 @@ client.on('message', msg => {
   }
 });
 
-var servers = document.querySelector('#servers');
+
 client.on('ready', () => {
   console.log(`Logged in as ${client.user.tag}!`);
 
@@ -75,7 +113,7 @@ client.on('ready', () => {
   }
 
   document.getElementById('input').addEventListener('keydown', e => {
-    var channels = document.querySelector('#channels')
+
     var input = document.getElementById('input')
     if (e.keyCode == 13) {
       window.selectedGuild.channels.resolve(selectedChannel.id).send(input.value)
@@ -96,20 +134,7 @@ client.on('ready', () => {
        window.selectedChannel = window.selectedGuild.channels.resolve(e.target.value)
      }
      servers.onchange = (e) => {
-       var g = client.guilds.resolve(e.target.value);
-       window.selectedGuild = g;
-       console.log('Selected guild:', window.selectedGuild)
-       channels.innerHTML = ''
-       window.selectedGuild.channels.cache.array()
-       .filter(chan => chan instanceof Discord.TextChannel)
-       .sort((a, b) => {
-         return a.position - b.position
-       }).forEach(c => {
-         var option = document.createElement('option')
-         option.value = c.id
-         option.innerHTML = '#' + c.name;
-         channels.appendChild(option)
-       })
+       populateChannels(e.target.value)
      }
    })
 });
@@ -119,38 +144,19 @@ ipcRenderer.on('deleteChecked', (event, arg) => {
 })
 
 
-function play(text) {
-  if (!text) return
-  if (text.length == 0) throw 'Text cannot be blank.'
-
-  var type = document.getElementById('type').value;
-  var voice = document.getElementById('voice').value
-  var rate = document.getElementById('rate').value;
-  var pitch = document.getElementById('pitch').value;
-  var data = {
-    "audioConfig": {
-      "audioEncoding": "LINEAR16",
-      "pitch": pitch,
-      "speakingRate": rate
-    },
-    "input": {
-      "text": text
-    },
-    "voice": {
-      "languageCode": "en-US",
-      "name": "en-US-Wavenet-" + voice
-    }
-  }
-
-  fetch(apiURL + `?alt=json&key=` + apiKey , {
-    method: 'post',
-    headers: {
-    },
-    body: JSON.stringify(data)
-  }).then(r => {
-    return r.json()
-  }).then(json => {
-    console.log(json.audioContent)
-    var audio = new Audio('data:audio/mp3;base64,'+json.audioContent).play();
-  }).catch(console.log)
+function populateChannels(guildID) {
+  var g = client.guilds.resolve(guildID);
+  window.selectedGuild = g;
+  channels.innerHTML = ''
+  window.selectedGuild.channels.cache.array()
+  .filter(chan => chan instanceof Discord.TextChannel)
+  .sort((a, b) => {
+    return a.rawPosition - b.rawPosition
+  }).forEach(c => {
+    var option = document.createElement('option')
+    option.value = c.id
+    option.id = c.id
+    option.innerHTML = '#' + c.name;
+    channels.appendChild(option)
+  })
 }

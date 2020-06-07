@@ -20,7 +20,17 @@ function createWindow () {
 
   const menu = new Menu()
 
-  // Build menu one item at a time, unlike
+  menu.append(new MenuItem ({
+    label: 'Chat',
+    submenu: [
+      {
+        label: 'Global',
+        click(e) {
+          mainWindow.webContents.send('openGlobal', e.checked)
+        }
+      }
+    ]
+  }))
   menu.append(new MenuItem ({
     label: 'Options',
     submenu: [
@@ -35,7 +45,7 @@ function createWindow () {
   }))
   Menu.setApplicationMenu(menu)
 
-  mainWindow.webContents.openDevTools()
+  //mainWindow.webContents.openDevTools()
 }
 
 // This method will be called when Electron has finished

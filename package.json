@@ -1,19 +1,30 @@
 {
-  "name": "electron-quick-start",
-  "version": "1.0.0",
-  "description": "A minimal Electron application",
+  "name": "Discord Lite",
+  "version": "1.0.1",
+  "description": "A minimal Discord client",
   "main": "main.js",
   "scripts": {
     "start": "electron ."
   },
-  "repository": "https://github.com/electron/electron-quick-start",
-  "keywords": [
-    "Electron",
-    "quick",
-    "start",
-    "tutorial",
-    "demo"
-  ],
+  "build": {
+    "files": [
+      "renderer.js"
+    ],
+    "appId": "Discord Lite",
+    "win": {
+      "icon": "",
+      "publisherName": "dreamcode",
+      "target": {
+        "target": "portable",
+        "arch": [
+          "x64"
+        ]
+      }
+    }
+  },
+  "private": true,
+  "repository": "https://github.com/0xdreamcode/discord-lite",
+  "keywords": [],
   "author": "GitHub",
   "license": "CC0-1.0",
   "devDependencies": {
