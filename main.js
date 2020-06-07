@@ -1,14 +1,13 @@
 // Modules to control application life and create native browser window
 const {app, BrowserWindow, Menu, MenuItem, ipcMain } = require('electron')
 const path = require('path')
-
+let mainWindow;
 
 function createWindow () {
   // Create the browser window.
-  const mainWindow = new BrowserWindow({
+  mainWindow = new BrowserWindow({
     width: 800,
     height: 600,
-    transparent: true,
     webPreferences: {
       nodeIntegration: true,
       preload: path.join(__dirname, 'preload.js')
@@ -28,6 +27,12 @@ function createWindow () {
         click(e) {
           mainWindow.webContents.send('openGlobal', e.checked)
         }
+      },
+      {
+        label: 'Channel',
+        click(e) {
+          mainWindow.webContents.send('openChannel', e.checked)
+        }
       }
     ]
   }))
@@ -43,9 +48,20 @@ function createWindow () {
       }
     ]
   }))
+  menu.append(new MenuItem ({
+    label: 'View',
+    submenu: [
+      {
+        label: 'Info panel',
+        click(e) {
+          mainWindow.webContents.send('toggleServerPane')
+        }
+      }
+    ]
+  }))
   Menu.setApplicationMenu(menu)
 
-  //mainWindow.webContents.openDevTools()
+  mainWindow.webContents.openDevTools()
 }
 
 // This method will be called when Electron has finished
@@ -70,3 +86,10 @@ app.on('window-all-closed', function () {
 
 // In this file you can include the rest of your app's specific main process
 // code. You can also put them in separate files and require them here.
+
+ipcMain.on('loadFile', (event, arg) => {
+  mainWindow.loadFile(arg)
+  .then(() => {
+      event.reply('loaded', arg);
+  })
+})

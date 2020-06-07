@@ -1,6 +1,6 @@
 {
-  "name": "Discord Lite",
-  "version": "1.0.1",
+  "name": "DiscordLite",
+  "version": "1.0.2",
   "description": "A minimal Discord client",
   "main": "main.js",
   "scripts": {
@@ -8,9 +8,13 @@
   },
   "build": {
     "files": [
-      "renderer.js"
+      "renderer.js",
+      "main.js",
+      "index.html",
+      "loading.html",
+      "commands/"
     ],
-    "appId": "Discord Lite",
+    "appId": "DiscordLite",
     "win": {
       "icon": "",
       "publisherName": "dreamcode",
@@ -31,7 +35,11 @@
     "electron": "^9.0.0"
   },
   "dependencies": {
+    "bouncy": "^3.2.2",
     "discord.js": "^12.2.0",
+    "express": "^4.17.1",
+    "express-http-proxy": "^1.6.0",
+    "http-proxy-middleware": "^1.0.4",
     "markdown": "^0.5.0",
     "tenorjs": "^1.0.7"
   }

@@ -7,6 +7,7 @@
 
 const fs = require('fs');
 const { ipcRenderer } = require('electron')
+
 var Discord = require('discord.js')
 
 Array.prototype.random = function () {
@@ -15,15 +16,21 @@ Array.prototype.random = function () {
 
 const client = new Discord.Client();
 client.commands = new Discord.Collection();
+
+
+
 client.login(require('./token.json'));
+console.log('Logging in')
 
 var channels = document.querySelector('#channels')
 var servers = document.querySelector('#servers');
-
+var chatlog = document.getElementById('chatlog')
+var info = document.querySelector('.infopanel')
+var input = document.getElementById('input')
 client.on('message', msg => {
   var tpl = document.querySelector('template.message')
   var node = document.createElement('div')
-  var chatlog = document.getElementById('chatlog')
+
   node.classList.add('message')
   node.innerHTML = tpl.innerHTML;
   node.id = msg.id
@@ -49,9 +56,10 @@ client.on('message', msg => {
   }
 
   if (msg.guild) {
+
     node.querySelector('.channel').innerHTML = '#' + msg.channel.name
     node.onclick = (e) => {
-
+      input.focus();
       var options = servers.options;
       for (var o in options) {
         if (options[o].id == msg.guild.id) {
@@ -96,12 +104,64 @@ client.on('message', msg => {
   if (cmd && msg.author.id == client.user.id) {
     cmd.execute(msg, tokens);
   }
+
+  var l = chatlog.childNodes.length - 1;
+  if (l > 100) {
+    chatlog.removeChild(chatlog.firstChild)
+  }
 });
 
 
 client.on('ready', () => {
-  console.log(`Logged in as ${client.user.tag}!`);
+  print(`Logged in as ${client.user.tag}!`);
+  startUI();
+});
 
+ipcRenderer.on('deleteChecked', (event, arg) => {
+  window.deleteTimeout = arg
+})
+
+ipcRenderer.on('toggleServerPane', (event, arg) => {
+  if (info.style.display == 'none') info.style.display = 'flex';
+  else info.style.display = 'none'
+})
+
+function populateChannels(guildID) {
+
+
+
+
+  var g = client.guilds.resolve(guildID);
+  window.selectedGuild = g;
+  channels.innerHTML = ''
+  window.selectedGuild.channels.cache.array()
+  .filter(chan => chan instanceof Discord.TextChannel)
+  .sort((a, b) => {
+    return a.rawPosition - b.rawPosition
+  }).forEach(c => {
+    var option = document.createElement('option')
+    option.value = c.id
+    option.id = c.id
+    option.innerHTML = '#' + c.name;
+    channels.appendChild(option)
+  })
+
+  /*
+    Print info about guild
+  */
+  var tpl = document.querySelector('template.guildinfo')
+  var node = document.createElement('div')
+
+  node.classList.add('guildinfo')
+  node.innerHTML = tpl.innerHTML
+
+  node.querySelector('.name').innerHTML = g.name;
+  node.querySelector('.icon').src = g.iconURL();
+
+  document.querySelector('.infopanel').innerHTML = node.innerHTML;
+}
+
+function startUI() {
   const commandFiles = fs.readdirSync('./commands').filter(file => file.endsWith('.js'));
 
   for (const file of commandFiles) {
@@ -112,9 +172,9 @@ client.on('ready', () => {
   	client.commands.set(command.name, command);
   }
 
-  document.getElementById('input').addEventListener('keydown', e => {
+  input.addEventListener('keydown', e => {
 
-    var input = document.getElementById('input')
+
     if (e.keyCode == 13) {
       window.selectedGuild.channels.resolve(selectedChannel.id).send(input.value)
       input.value = "";
@@ -137,26 +197,14 @@ client.on('ready', () => {
        populateChannels(e.target.value)
      }
    })
-});
 
-ipcRenderer.on('deleteChecked', (event, arg) => {
-  window.deleteTimeout = arg
-})
-
-
-function populateChannels(guildID) {
-  var g = client.guilds.resolve(guildID);
-  window.selectedGuild = g;
-  channels.innerHTML = ''
-  window.selectedGuild.channels.cache.array()
-  .filter(chan => chan instanceof Discord.TextChannel)
-  .sort((a, b) => {
-    return a.rawPosition - b.rawPosition
-  }).forEach(c => {
-    var option = document.createElement('option')
-    option.value = c.id
-    option.id = c.id
-    option.innerHTML = '#' + c.name;
-    channels.appendChild(option)
-  })
 }
+
+function print(t) {
+  var node = document.createElement('div')
+
+  node.classList.add('message')
+  node.innerHTML = `[${new Date().getHours()}:${new Date().getMinutes()}:${new Date().getSeconds()}] ${t}`;
+  chatlog.appendChild(node)
+}
+print('Connecting...')
