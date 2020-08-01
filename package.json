@@ -37,10 +37,13 @@
   "dependencies": {
     "bouncy": "^3.2.2",
     "discord.js": "^12.2.0",
+    "electron-prompt": "^1.5.1",
     "express": "^4.17.1",
     "express-http-proxy": "^1.6.0",
     "http-proxy-middleware": "^1.0.4",
+    "mariadb": "^2.4.1",
     "markdown": "^0.5.0",
+    "mysql": "^2.18.1",
     "tenorjs": "^1.0.7"
   }
 }

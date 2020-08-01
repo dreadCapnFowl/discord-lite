@@ -1,6 +1,7 @@
 // Modules to control application life and create native browser window
 const {app, BrowserWindow, Menu, MenuItem, ipcMain } = require('electron')
 const path = require('path')
+
 let mainWindow;
 
 function createWindow () {
@@ -36,6 +37,7 @@ function createWindow () {
       }
     ]
   }))
+  var onTop = false;
   menu.append(new MenuItem ({
     label: 'Options',
     submenu: [
@@ -44,6 +46,15 @@ function createWindow () {
         type: 'checkbox',
         click(e) {
           mainWindow.webContents.send('deleteChecked', e.checked)
+        }
+      },
+      {
+        label: 'Always on top',
+        type: 'checkbox',
+        click(e) {
+          mainWindow.webContents.send('deleteChecked', e.checked)
+          onTop = !onTop
+          mainWindow.setAlwaysOnTop(onTop);
         }
       }
     ]

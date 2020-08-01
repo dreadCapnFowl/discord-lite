@@ -4,9 +4,16 @@
 // `nodeIntegration` is turned off. Use `preload.js` to
 // selectively enable features needed in the rendering
 // process.
-
 const fs = require('fs');
 const { ipcRenderer } = require('electron')
+const prompt = require('electron-prompt');
+const mysql = require('mysql');
+let conn =  mysql.createConnection({
+  host: 'localhost',
+  user: 'lite',
+  password: 'lite',
+  database: 'discord'
+});
 
 var Discord = require('discord.js')
 
@@ -19,7 +26,7 @@ client.commands = new Discord.Collection();
 
 
 
-client.login(require('./token.json'));
+
 console.log('Logging in')
 
 var channels = document.querySelector('#channels')
@@ -27,7 +34,23 @@ var servers = document.querySelector('#servers');
 var chatlog = document.getElementById('chatlog')
 var info = document.querySelector('.infopanel')
 var input = document.getElementById('input')
-client.on('message', msg => {
+client.on('message', async msg => {
+
+    // Insert message into database
+    var message = {
+        id: msg.id,
+        authorId: msg.author.id,
+        content: msg.content,
+        cleanContent: msg.cleanContent,
+        timestamp: msg.createdTimestamp,
+        guildId: msg.guild ? msg.guild.id : null,
+        channelId: msg.channel ? msg.channel.id : null,
+        authorTag: msg.author.tag
+    }   
+    const res = await conn.query("INSERT INTO messages SET ?", message);
+
+    insertUpdateUser(msg.author);
+
   var tpl = document.querySelector('template.message')
   var node = document.createElement('div')
 
@@ -112,10 +135,62 @@ client.on('message', msg => {
 });
 
 
-client.on('ready', () => {
+client.on('ready', async () => {
   print(`Logged in as ${client.user.tag}!`);
+
+//  var g = client.guilds.resolve('456531507318620191');
+//  console.log(g.members.cache)
+
+    client.guilds.cache.forEach(async g => {
+        var r = await conn.query(`
+        INSERT INTO guilds (id, name, memberCount, iconURL, createdTimestamp, ownerId, region, splash, widgetEnabled) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?) ON DUPLICATE KEY UPDATE
+        name = ?,
+        memberCount = ?,
+        iconURL = ?,
+        createdTimestamp = ?,
+        ownerId = ?,
+        region = ?,
+        splash = ?,
+        widgetEnabled = ?`,
+        [g.id, g.name, g.memberCount, g.iconURL(), g.createdTimestamp, g.ownerID, g.region, g.splashURL(), g.widgetEnabled, g.name, g.memberCount, g.iconURL(), g.createdTimestamp,  g.ownerID, g.region, g.splashURL(), g.widgetEnabled])
+
+        g.roles.cache.forEach(async role => {
+            var r = await conn.query(`INSERT INTO roles (id, name, guildId, hexColor, hoist, permissions, rawPosition) VALUES (?, ?, ?, ?, ?, ?, ?)`, [role.id, role.name, g.id, role.hexColor, role.hoist, role.permissions.bitfield, role.rawPosition])
+        })
+    })
   startUI();
 });
+
+client.on('presenceUpdate', async (oldMember, newMember) => {
+    var status = {}
+
+
+    if (oldMember && oldMember.user.presence.status != newMember.user.presence.status) {
+      console.log(`${oldMember.user.tag} ${oldMember.user.presence.status} to ${newMember.user.presence.status}`);
+      status.from = oldMember.user.presence.status
+    }
+    else {
+      console.log(`${newMember.user.tag}: ${newMember.user.presence.status}`);  
+      status.from = null;
+    }
+
+    status.to = newMember.user.presence.status
+    status.tag = newMember.user.tag
+    status.userid = newMember.user.id
+    status.timestamp = new Date().getTime()
+    //console.log(status);
+    // Mr. Pink 🐱 online to online
+    var notif = new Notification(newMember.user.tag, {
+        body: newMember.user.presence.status,
+        icon: newMember.user.avatarURL(),
+        silent: true
+    });
+
+    insertUpdateUser(newMember.user);
+
+    const res = await conn.query("INSERT INTO statuses SET ?", status);
+});
+
 
 ipcRenderer.on('deleteChecked', (event, arg) => {
   window.deleteTimeout = arg
@@ -208,3 +283,49 @@ function print(t) {
   chatlog.appendChild(node)
 }
 print('Connecting...')
+
+document.getElementById('tokenSubmit').addEventListener('click', (e) => {
+    var tok = document.getElementById('tokenInput').value
+    console.log(tok)
+    client.login(tok)
+    .catch(e => {
+        console.log(e);
+        document.querySelector('login-overlay').style.display = 'flex';
+    })
+    document.querySelector('login-overlay').style.display = 'none';
+})
+
+async function insertUpdateUser(user) {
+    if (!user) return;
+    const res = await conn.query(`INSERT INTO users (id, tag, lastActive, avatarURL, createdAt, createdTimestamp, bot, lastMessageId, locale, status) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?) ON DUPLICATE KEY UPDATE
+    tag = ?,
+    lastActive = ?,
+    avatarURL = ?,
+    createdAt = ?,
+    createdTimestamp = ?,
+    bot = ?,
+    lastMessageId = ?,
+    locale = ?,
+    status = ?;`, [
+        user.id,
+        user.tag,
+        new Date().getTime(),
+        user.avatarURL(),
+        user.createdAt,
+        user.createdTimestamp,
+        user.bot,
+        user.lastMessageID,
+        user.locale,
+        user.presence.status,
+        user.tag,
+        new Date().getTime(),
+        user.avatarURL(),
+        user.createdAt,
+        user.createdTimestamp,
+        user.bot,
+        user.lastMessageID,
+        user.locale,
+        user.presence.status
+    ])
+    return res;
+}
